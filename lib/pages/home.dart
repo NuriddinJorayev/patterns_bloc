@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:petterns_bloc/blocs/list_post_cubit.dart';
 import 'package:petterns_bloc/blocs/list_post_state.dart';
 import 'package:petterns_bloc/pages/create_post_page.dart';
+import 'package:petterns_bloc/utils/navigation.dart';
 import 'package:petterns_bloc/views/views_of_home.dart';
 
 class Home extends StatefulWidget {
@@ -33,7 +35,10 @@ class _HomeState extends State<Home> {
       body: BlocBuilder<ListPostCubit, ListPostState>(
         builder: (context, state) {
           if (state is ListPostLoaded)
-            return all_list_items(h, w, state.future_list!);
+            return all_list_items(h, w, state.future_list!, () {
+              print("get all data");
+              BlocProvider.of<ListPostCubit>(context).initialize_future();
+            });
           else
             return Center(
               child: SizedBox(
@@ -46,11 +51,12 @@ class _HomeState extends State<Home> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(context, Create_post.id).then((value) {
-            if (value != null) {
-              // initialize_future();
-            }
-            FocusScope.of(context).requestFocus(FocusNode());
+          SchedulerBinding.instance?.addPostFrameCallback((timeStamp) async {
+            await MyNavigation.push(context, Create_post()).then((value) {
+              if (value != null) {
+                context.read<ListPostCubit>().initialize_future();
+              }
+            });
           });
         },
         child: Icon(Icons.add),

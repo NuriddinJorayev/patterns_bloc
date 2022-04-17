@@ -47,8 +47,10 @@ class Rest_APi {
 
   static Future<String> PUT(Post p) async {
     var uri = Uri.https(BASE, API_UPDATE + p.id.toString()); // http or https
-    var params = paramsUpdate(p);
-    var response = await put(uri, headers: headers, body: jsonEncode(params));
+    var response =
+        await put(uri, headers: headers, body: jsonEncode(paramsUpdate(p)));
+    print("status code = ${response.statusCode}");
+    print("id = ${p.id}");
     if (response.statusCode == 200) {
       print('Updated \n');
       print("response body = ${response.body}");
@@ -80,23 +82,15 @@ class Rest_APi {
     return params;
   }
 
-  static Map<String, String> paramsCreate(Post post) {
-    Map<String, String> params = {};
-    params.addAll({
-      'title': post.fullname,
-      'body': post.phone,
-      'userId': post.id.toString(),
-    });
-    return params;
-  }
+  static Map<String, String> paramsCreate(Post post) => {
+        'fullname': post.fullname,
+        'phone': post.phone,
+        'id': post.id.toString(),
+      };
 
-  static Map<String, String> paramsUpdate(Post post) {
-    Map<String, String> params = {};
-    params.addAll({
-      'title': post.fullname,
-      'body': post.phone,
-      'userId': post.id.toString(),
-    });
-    return params;
-  }
+  static Map<String, String> paramsUpdate(Post post) => {
+        'fullname': post.fullname,
+        'phone': post.phone,
+        'id': post.id.toString(),
+      };
 }

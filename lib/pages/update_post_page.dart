@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:petterns_bloc/blocs/update_post_cubit.dart';
+import 'package:petterns_bloc/blocs/update_post_state.dart';
 import 'package:petterns_bloc/models/post_model.dart';
 import 'package:petterns_bloc/widgets/text_field.dart';
 
@@ -13,15 +16,12 @@ class Update_post extends StatefulWidget {
 }
 
 class _Update_postState extends State<Update_post> {
-  bool isloading = false;
-  var control1 = TextEditingController();
-  var control2 = TextEditingController();
-  Post? post;
+  var con1 = TextEditingController();
+  var con2 = TextEditingController();
   @override
   void initState() {
-    post = widget.post;
-    control1.text = widget.post.fullname;
-    control2.text = widget.post.phone;
+    con1.text = widget.post.fullname;
+    con2.text = widget.post.phone;
     super.initState();
   }
 
@@ -29,79 +29,60 @@ class _Update_postState extends State<Update_post> {
   Widget build(BuildContext context) {
     var h = MediaQuery.of(context).size.height;
     var w = MediaQuery.of(context).size.width;
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text("Update Post"),
-      ),
-      body: SingleChildScrollView(
-        child: Stack(
-          children: [
-            Container(
-              height: h,
-              width: w,
-              child: Column(
+    return BlocProvider(
+      create: (context) => Update_post_cubit(con1, con2, widget.post, false),
+      child: BlocBuilder<Update_post_cubit, Update_post_state>(
+        builder: (context, state) {
+          print("con1 = ${state.control1.text}");
+          print("con2 = ${state.control2.text}");
+          print("post id = ${widget.post.id}");
+          return Scaffold(
+            appBar: AppBar(
+              centerTitle: true,
+              title: Text("Edite Post"),
+            ),
+            body: SingleChildScrollView(
+              child: Stack(
                 children: [
-                  SizedBox(height: 20),
-                  Text_Field.Create_textFiled("Title", control1, 3),
-                  Text_Field.Create_textFiled("Body", control2, 6),
+                  Container(
+                    height: h,
+                    width: w,
+                    child: Column(
+                      children: [
+                        SizedBox(height: 20),
+                        Text_Field.Create_textFiled("Title", state.control1, 3),
+                        Text_Field.Create_textFiled("Body", state.control2, 6),
+                      ],
+                    ),
+                  ),
+                  state.isloading
+                      ? Container(
+                          height: h,
+                          width: w,
+                          color: Colors.black.withOpacity(.4),
+                          child: Container(
+                            height: 60,
+                            width: 60,
+                            alignment: Alignment.center,
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : SizedBox.shrink()
                 ],
               ),
             ),
-            isloading
-                ? Container(
-                    height: h,
-                    width: w,
-                    color: Colors.black.withOpacity(.4),
-                    child: Container(
-                      height: 60,
-                      width: 60,
-                      alignment: Alignment.center,
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : SizedBox.shrink()
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // FocusScope.of(context).requestFocus(FocusNode());
-          // var text1 = control1.text.trim();
-          // var text2 = control2.text.trim();
-          // if (text1.isNotEmpty && text2.isNotEmpty) {
-          //   setState(() => isloading = true);
-          //   post!.title = text1;
-          //   post!.body = text2;
-          //   await Create_delete_add_function.Update(post!);
-          //   setState(() => isloading = false);
-          //   Navigator.pop(context, "new_post");
-          // } else {
-          //   var message = (text1.isEmpty && text2.isEmpty)
-          //       ? "Title and Body"
-          //       : text1.isEmpty
-          //           ? "Title"
-          //           : "Body";
-          //   ScaffoldMessenger.of(context).showSnackBar(
-          //     SnackBar(
-          //       content: Text(
-          //         message + " are empty",
-          //         style: TextStyle(
-          //             fontSize: 18,
-          //             fontWeight: FontWeight.bold,
-          //             letterSpacing: .5),
-          //       ),
-          //       action: SnackBarAction(
-          //         label: 'Exit',
-          //         onPressed: () {
-          //           Navigator.pop(context);
-          //         },
-          //       ),
-          //     ),
-          //   );
-          // }
+            floatingActionButton: FloatingActionButton(
+              onPressed: () async {
+                FocusScope.of(context).requestFocus(FocusNode());
+                var p = Post(widget.post.id, state.control1.text.trim(),
+                    state.control2.text.trim());
+                var v = BlocProvider.of<Update_post_cubit>(context)
+                    .Update_post(context, p, state.control1, state.control2);
+              },
+              child: Icon(Icons.update),
+            ),
+          );
         },
-        child: Icon(Icons.update),
       ),
     );
   }

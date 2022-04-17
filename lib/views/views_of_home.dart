@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:petterns_bloc/blocs/list_post_cubit.dart';
+import 'package:petterns_bloc/blocs/update_post_cubit.dart';
 import 'package:petterns_bloc/models/post_model.dart';
+import 'package:petterns_bloc/pages/create_post_page.dart';
+import 'package:petterns_bloc/pages/update_post_page.dart';
+import 'package:petterns_bloc/utils/navigation.dart';
 
-Widget all_list_items(h, w, Future<List<Post>?> list_posts) => Container(
+Widget all_list_items(h, w, Future<List<Post>?> list_posts, Function() func) =>
+    Container(
       height: h,
       width: w,
       decoration: BoxDecoration(
@@ -21,7 +27,7 @@ Widget all_list_items(h, w, Future<List<Post>?> list_posts) => Container(
                     physics: BouncingScrollPhysics(),
                     itemCount: snp.data!.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return items_builder(snp.data![index]);
+                      return items_builder(snp.data![index], func);
                     },
                   )
                 : Center(
@@ -52,7 +58,7 @@ Widget all_list_items(h, w, Future<List<Post>?> list_posts) => Container(
       ),
     );
 
-Widget items_builder(Post p) => Slidable(
+Widget items_builder(Post p, Function() fun) => Slidable(
       child: Card(
         margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         child: Container(
@@ -85,13 +91,13 @@ Widget items_builder(Post p) => Slidable(
           ActionPane(extentRatio: .25, motion: const ScrollMotion(), children: [
         SlidableAction(
           // Edite function
-          onPressed: (BuildContext con) {
-            // Navigator.push(
-            //     context,
-            //     MaterialPageRoute(
-            //         builder: (_) => Update_post(post: p))).then((value) {
-            //   FocusScope.of(context).requestFocus(FocusNode());
-            // });
+          onPressed: (BuildContext context) async {
+            print("keldi = ${p.id}");
+            MyNavigation.push(context, Update_post(post: p)).then((value) {
+              if (value == "new") {
+                fun();
+              }
+            });
           },
           backgroundColor: Colors.blue,
           foregroundColor: Colors.white,
